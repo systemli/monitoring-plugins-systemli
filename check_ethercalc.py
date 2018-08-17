@@ -8,6 +8,7 @@
 import argparse
 from datetime import datetime, timedelta
 import nagiosplugin
+import re
 import requests
 import time
 
@@ -26,7 +27,11 @@ class EtherCalc(nagiosplugin.Resource):
     def getCalcIDs(self):
         req = requests.get('{}://{}:{}/_rooms/'.format(self.protocol,
                 self.host, self.port))
-        roomids = req.json()
+        rooms = req.json()
+        matched = re.compile('.*_formdata$').search
+        for room in rooms:
+            if not matched(room):
+                roomids.append(room)
         return roomids
 
     def probe(self):
