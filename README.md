@@ -3,6 +3,10 @@
 The monitoring plugins for Icinga/Nagios are developed and used by
 systemli.org.
 
+## check_ethercalc.py
+
+`check_ethercalc.py` gets the count of calc sheets from an Ethercalc instance.
+
 ## check_etherpad.py
 
 `check_etherpad.py` gets two metrics from an Etherpad instance:
