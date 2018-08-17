@@ -29,6 +29,7 @@ class EtherCalc(nagiosplugin.Resource):
                 self.host, self.port))
         rooms = req.json()
         matched = re.compile('.*_formdata$').search
+        roomids = []
         for room in rooms:
             if not matched(room):
                 roomids.append(room)
