@@ -16,6 +16,9 @@ systemli.org.
   to monitor automatic pad cleanup - we delete unchanged pads after some
   time for privacy reasons.)
 
+It allows to limit the considered pads by defining a sufix for pad names
+and by defining suffixes to be ignored.
+
 ## check_postfix.py
 
 `check_postfix.py` determines the mail throughput from a postfix log

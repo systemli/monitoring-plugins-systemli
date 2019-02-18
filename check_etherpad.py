@@ -18,13 +18,16 @@ class EtherPad(nagiosplugin.Resource):
     """
 
     def __init__(self, protocol='http', host='localhost', port=9001,
-                       apiversion='1.2.13', apikey='abc'):
-        self.protocol   = protocol
-        self.host       = host
-        self.port       = port
-        self.apiversion = apiversion
-        self.apikey     = apikey
-        self.padids     = self.getPadIDs()
+                       apiversion='1.2.13', apikey='abc', suffix=None,
+                       ignoresuffix=[]):
+        self.protocol     = protocol
+        self.host         = host
+        self.port         = port
+        self.apiversion   = apiversion
+        self.apikey       = apikey
+        self.suffix       = suffix
+        self.ignoresuffix = ignoresuffix
+        self.padids       = self.getPadIDs()
 
     def fetchApi(self, apicmd, apiargs):
         payload = {'apikey': self.apikey}
@@ -37,7 +40,14 @@ class EtherPad(nagiosplugin.Resource):
 
     def getPadIDs(self):
         apires = self.fetchApi(apicmd='listAllPads', apiargs='')
-        padids = apires['data']['padIDs']
+        allpadids = apires['data']['padIDs']
+        padids = []
+        for id in allpadids:
+            if self.suffix and not id.endswith(self.suffix):
+                continue
+            if self.ignoresuffix and id.endswith(tuple(self.ignoresuffix)):
+                    continue
+            padids.append(id)
         return padids
 
     def getOldestEditedPad(self):
@@ -63,11 +73,14 @@ class EtherPad(nagiosplugin.Resource):
 
 class LoadSummary(nagiosplugin.Summary):
     def ok(self, results):
+        if results['padage'].metric.value == 0:
+            paddays = 0
+        else:
+            paddays = (datetime.utcnow() -
+                    datetime.fromtimestamp(results['padage'].metric.value)).days
         return '{} active pads, oldest pad {} days'.format(
                 results['padcount'].metric,
-                (datetime.utcnow() -
-                    datetime.fromtimestamp(results['padage'].metric.value)).days)
-
+                paddays)
     problem = ok
 
 def main():
@@ -78,6 +91,11 @@ def main():
                 help='port of the Etherpad instance (default: 9001)')
     argp.add_argument('-a', '--apikey', metavar='APIKEY',
                 help='apikey for the Etherpad instance')
+    argp.add_argument('-s', '--suffix', metavar='SUFFIX',
+                help='limit considered pads to this suffix')
+    argp.add_argument('-i', '--ignore-suffix', metavar='IGNORE-SUFFIX',
+                action='append',
+                help='limit considered pads by ignoring this suffix')
     argp.add_argument('-w', '--warning', metavar='RANGE', default='',
                 help='return warning if pad count is outside RANGE')
     argp.add_argument('-c', '--critical', metavar='RANGE', default='',
@@ -98,7 +116,8 @@ def main():
                 timedelta(days=args.critical_days)).timetuple()))
 
     check = nagiosplugin.Check(
-                EtherPad(host=args.hostname, apikey=args.apikey),
+                EtherPad(host=args.hostname, apikey=args.apikey,
+                    suffix=args.suffix, ignoresuffix=args.ignore_suffix),
                 nagiosplugin.ScalarContext('padcount', args.warning,
                     args.critical),
                 nagiosplugin.ScalarContext('padage',
