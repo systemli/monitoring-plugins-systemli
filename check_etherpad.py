@@ -65,7 +65,10 @@ class EtherPad(nagiosplugin.Resource):
 
     def probe(self):
         padcount = len(self.padids)
-        padage   = self.getOldestEditedPad()
+        if padcount == 0:
+            padage = int(time.mktime(datetime.utcnow().timetuple()))
+        else:
+            padage = self.getOldestEditedPad()
         return [nagiosplugin.Metric('padcount', padcount, min=0,
                                     context='padcount'),
                 nagiosplugin.Metric('padage', padage, min=0,
