@@ -127,7 +127,7 @@ def main():
                     "{}:".format(args.warning_days),
                     "{}:".format(args.critical_days), fmt_metric='{value}'),
                 LoadSummary())
-    check.main()
+    check.main(timeout=20)
 
 if __name__ == '__main__':
     main()
