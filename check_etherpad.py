@@ -35,7 +35,7 @@ class EtherPad(nagiosplugin.Resource):
             payload = {**payload, **apiargs}
         req = requests.get('{}://{}:{}/api/{}/{}'.format(self.protocol,
                 self.host, self.port, self.apiversion, apicmd),
-                 params=payload)
+                 params=payload, timeout=20)
         return req.json()
 
     def getPadIDs(self):
