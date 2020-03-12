@@ -35,7 +35,7 @@ class EtherPad(nagiosplugin.Resource):
             payload = {**payload, **apiargs}
         req = requests.get('{}://{}:{}/api/{}/{}'.format(self.protocol,
                 self.host, self.port, self.apiversion, apicmd),
-                 params=payload, timeout=60)
+                 params=payload, timeout=120)
         return req.json()
 
     def getPadIDs(self):
@@ -127,7 +127,7 @@ def main():
                     "{}:".format(args.warning_days),
                     "{}:".format(args.critical_days), fmt_metric='{value}'),
                 LoadSummary())
-    check.main(timeout=60)
+    check.main(timeout=120)
 
 if __name__ == '__main__':
     main()
